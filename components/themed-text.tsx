@@ -44,11 +44,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 32,
+    fontFamily: 'inter',
+    fontSize: 70,
     fontWeight: 'bold',
-    lineHeight: 32,
+    lineHeight: 70,
+    color: 'red'
   },
   subtitle: {
+    fontFamily: 'inter',
     fontSize: 20,
     fontWeight: 'bold',
   },
