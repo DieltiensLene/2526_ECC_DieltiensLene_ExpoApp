@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'inter',
-    fontSize: 70,
+    fontSize: 50,
     fontWeight: 'bold',
     lineHeight: 70,
     color: 'red'
