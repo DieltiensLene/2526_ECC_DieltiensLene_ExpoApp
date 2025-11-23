@@ -27,19 +27,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="add"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Add',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus" color={color} />,
+          // keep the add tab visually centered by placing it in the middle order
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="explore"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+          title: 'Agenda',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
         }}
-          />
+      />
           
     </Tabs>
   );
