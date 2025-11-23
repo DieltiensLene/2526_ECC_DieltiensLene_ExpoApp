@@ -33,7 +33,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="auto" />
+      {/* Use dark status-bar content on the white background */}
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

@@ -12,7 +12,10 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#0a7ea4',
+        // Make active tab/icon color pink and ensure tab bar uses a white background
+        tabBarActiveTintColor: '#FF2D86',
+        tabBarInactiveTintColor: '#687076',
+        tabBarStyle: { backgroundColor: '#FFFFFF' },
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
