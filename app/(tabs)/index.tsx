@@ -24,9 +24,9 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 24, justifyContent: 'center' },
-  titleLine: { lineHeight: 56 },
-  titleText: { fontSize: 48, lineHeight: 56, color: '#000' },
+  content: { flex: 1, padding: 24, justifyContent: 'center', paddingTop: 0, marginTop: -140 },
+  titleLine: { lineHeight: 36 },
+  titleText: { fontSize: 30, lineHeight: 36, color: '#000' },
   pink: { color: '#FF2D86' },
-  subtitle: { fontSize: 40, lineHeight: 48, marginTop: 8, color: '#000' },
+  subtitle: { fontSize: 30, lineHeight: 36, marginTop: 8, color: '#000' },
 });
