@@ -31,6 +31,8 @@ export default function TabLayout() {
         options={{
           title: 'Add',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus" color={color} />,
+          // hide the bottom tab bar when the Add screen is active so it behaves like a separate full-screen page
+          tabBarStyle: { display: 'none' },
           // keep the add tab visually centered by placing it in the middle order
         }}
       />
