@@ -27,7 +27,10 @@ export default function AddScreen() {
       <View style={styles.optionsRow}>
         <TouchableOpacity
           accessibilityLabel="Thorn"
-          style={[styles.option, selected === 'thorn' && styles.optionActive]}
+          style={[
+            styles.option,
+            selected === 'thorn' && styles.optionActiveThorn,
+          ]}
           onPress={() => setSelected('thorn')}
         >
           <Text style={styles.emoji}>🌿</Text>
@@ -35,7 +38,10 @@ export default function AddScreen() {
 
         <TouchableOpacity
           accessibilityLabel="Rose"
-          style={[styles.option, selected === 'rose' && styles.optionActive]}
+          style={[
+            styles.option,
+            selected === 'rose' && styles.optionActiveRose,
+          ]}
           onPress={() => setSelected('rose')}
         >
           <Text style={styles.emoji}>🌹</Text>
@@ -51,23 +57,37 @@ export default function AddScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: 24, justifyContent: 'center', paddingTop: 0, marginTop: -140 },
+  // place the header at the absolute top (where the buttons used to be)
+  content: { position: 'absolute', top: 68, left: 24, right: 24 },
   titleLine: { lineHeight: 36 },
   titleText: { fontSize: 30, lineHeight: 36, color: '#000' },
   pink: { color: '#FF2D86' },
   subtitle: { fontSize: 30, lineHeight: 36, marginTop: 8, color: '#000' },
   green: { color: '#2BB673' },
-  optionsRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 48, paddingHorizontal: 24 },
+  // place the selectable options where the header used to be (centered)
+  optionsRow: {
+    flex: 1,
+    padding: 24,
+    marginTop: -140,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
   option: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
+    width: 140,
+    height: 140,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    padding: 8,
   },
-  optionActive: { backgroundColor: '#fff2f6' },
-  emoji: { fontSize: 72 },
+  optionActiveRose: { borderColor: '#FF2D86', backgroundColor: 'rgba(255,45,134,0.04)' },
+  optionActiveThorn: { borderColor: '#2BB673', backgroundColor: 'rgba(43,182,115,0.04)' },
+  emoji: { fontSize: 88 },
   continue: {
     position: 'absolute',
     right: 20,
