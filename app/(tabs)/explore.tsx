@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 
@@ -20,29 +20,45 @@ function generateMonthGrid(year: number, month: number) {
 }
 
 export default function AgendaScreen() {
-  const now = new Date();
-  // optionally lock to September 2025 to match screenshot — use current month by default
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(new Date());
 
-  const grid = useMemo(() => generateMonthGrid(year, month), [year, month]);
+  const grid = useMemo(() => generateMonthGrid(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
 
-  // example event dots; replace with real data when available
-  const events: Record<number, ('pink' | 'green')[]> = {
+  // sample events keyed to September 2025 (month index 8). Other months show no demo events.
+  const sampleEventsSept2025: Record<number, ('pink' | 'green')[]> = {
     1: ['green', 'pink'],
     2: ['pink'],
     3: ['pink'],
     13: ['green'],
-    24: ['pink'],
     19: ['green'],
+    24: ['pink'],
   };
 
-  const monthLabel = now.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+  const events = (viewDate.getFullYear() === 2025 && viewDate.getMonth() === 8) ? sampleEventsSept2025 : {};
+
+  const monthLabel = viewDate.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
+  function prevMonth() {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  }
+
+  function nextMonth() {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  }
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={prevMonth} style={styles.arrowButton} accessibilityLabel="Previous month">
+          <ThemedText style={styles.arrowText}>{'<'}</ThemedText>
+        </TouchableOpacity>
+
         <ThemedText type="title" style={styles.monthText}>{monthLabel.toUpperCase()}</ThemedText>
+
+        <TouchableOpacity onPress={nextMonth} style={styles.arrowButton} accessibilityLabel="Next month">
+          <ThemedText style={styles.arrowText}>{'>'}</ThemedText>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.weekdaysRow}>
@@ -56,7 +72,10 @@ export default function AgendaScreen() {
           <View key={String(idx)} style={styles.cell}>
             {day ? (
               <>
-                <ThemedText style={[styles.dayNumber, day === now.getDate() && styles.today]}>{day}</ThemedText>
+                <ThemedText style={[
+                  styles.dayNumber,
+                  day === today.getDate() && viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear() ? styles.today : undefined,
+                ]}>{day}</ThemedText>
                 <View style={styles.dotsRow}>
                   {(events[day] || []).slice(0, 3).map((c, i) => (
                     <View key={i} style={[styles.dot, c === 'pink' ? styles.dotPink : styles.dotGreen]} />
@@ -72,8 +91,11 @@ export default function AgendaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40 },
   header: { paddingTop: 16, paddingBottom: 8, alignItems: 'center' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingTop: 8 },
+  arrowButton: { padding: 8 },
+  arrowText: { fontSize: 20, color: '#FF2D86', fontWeight: '700' },
   monthText: { fontSize: 18, fontWeight: '700', color: '#FF2D86' },
   weekdaysRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 12, paddingVertical: 8 },
   weekday: { color: '#FF2D86', fontSize: 12, fontWeight: '600' },
