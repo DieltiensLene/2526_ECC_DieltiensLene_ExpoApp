@@ -32,7 +32,9 @@ export default function RootLayout() {
     // The app forces the light color scheme via `useColorScheme` hook,
     // so use the light/default theme here explicitly.
     <ThemeProvider value={DefaultTheme}>
-      <Stack>
+      <Stack initialRouteName="login">
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="signup" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
