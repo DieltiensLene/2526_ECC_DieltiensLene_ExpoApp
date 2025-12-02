@@ -5,9 +5,8 @@ import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 import { setItem } from '@/app/utils/storage';
 
-// Update this to your backend URL as needed. On emulators, 'localhost' may need
-// to be replaced with the host IP (e.g. 10.0.2.2 for Android emulator).
-const API_BASE = process.env.API_BASE || 'http://localhost:3000/users';
+// Backend base URL — match the deployed host used for signup.
+const API_BASE = process.env.API_BASE || 'https://two526-ecc-dieltienslene-backend-app-l7fz.onrender.com/users';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -34,17 +33,24 @@ export default function LoginScreen() {
         body: JSON.stringify({ email, password }),
       });
 
-      const json = await resp.json();
+      let json = null;
+      let text = null;
+      try {
+        json = await resp.json();
+      } catch {
+        try { text = await resp.text(); } catch { text = null; }
+      }
 
       if (!resp.ok) {
-        const msg = json?.message || json?.error || 'Login failed';
-        Alert.alert('Login failed', msg.toString());
+        const msg = json?.message || json?.error || text || `HTTP ${resp.status}`;
+        console.warn('Login failed', { status: resp.status, body: json || text });
+        Alert.alert('Login failed', String(msg));
         setLoading(false);
         return;
       }
 
       // backend returns { message, id }
-      const userId = json?.id;
+      const userId = json?.id ?? text;
 
       await setItem('loggedIn', 'true');
       if (userId) await setItem('userId', String(userId));
@@ -52,7 +58,7 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (err) {
       console.error('Login error', err);
-      Alert.alert('Error', 'Unable to sign in. Please check your network and try again.');
+      Alert.alert('Error', String(err) || 'Unable to sign in. Please check your network and try again.');
     } finally {
       setLoading(false);
     }

@@ -57,6 +57,8 @@ export default function SignupScreen() {
 
       const userId = json?.id ?? text;
       await setItem('loggedIn', 'true');
+      // store username for greeting on home screen
+      if (username?.trim()) await setItem('username', username.trim());
       if (userId) await setItem('userId', String(userId));
 
       router.replace('/(tabs)');
