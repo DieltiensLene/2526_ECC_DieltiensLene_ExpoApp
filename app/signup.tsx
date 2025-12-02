@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
 import { setItem } from '@/app/utils/storage';
 
-const API_BASE = process.env.API_BASE || 'http://localhost:3000/users';
+const API_BASE = 'https://two526-ecc-dieltienslene-backend-app-l7fz.onrender.com/users';
 
 export default function SignupScreen() {
   const router = useRouter();
