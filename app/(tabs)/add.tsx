@@ -9,12 +9,13 @@ export default function AddScreen() {
   const router = useRouter();
 
   function handleContinue() {
+    console.log('Selected mood:', selected);
     if (!selected) {
       Alert.alert('Pick one first', 'Select a rose or thorn before continuing.');
       return;
     }
 
-    router.push({ pathname: '/add/message', params: { type: selected } });
+    router.push(`/add/message?type=${selected}`);
   }
 
   return (
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
   continue: {
     position: 'absolute',
     right: 20,
-    bottom: 40,
+    bottom: 100,
     backgroundColor: '#FF5C93',
     paddingVertical: 12,
     paddingHorizontal: 20,

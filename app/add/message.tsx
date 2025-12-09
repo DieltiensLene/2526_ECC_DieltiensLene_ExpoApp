@@ -46,6 +46,8 @@ export default function AddMessageScreen() {
         ...parsed,
       ].slice(0, 50);
 
+      //post message to db
+
       await setItem('entries', JSON.stringify(next));
       router.push('/(tabs)/explore');
     } catch (err) {

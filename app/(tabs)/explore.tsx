@@ -112,44 +112,45 @@ export default function AgendaScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={prevMonth} style={styles.arrowButton} accessibilityLabel="Previous month">
-          <ThemedText style={styles.arrowText}>{'<'}</ThemedText>
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.pageContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={prevMonth} style={styles.arrowButton} accessibilityLabel="Previous month">
+            <ThemedText style={styles.arrowText}>{'<'}</ThemedText>
+          </TouchableOpacity>
 
-        <ThemedText type="title" style={styles.monthText}>{monthLabel.toUpperCase()}</ThemedText>
+          <ThemedText type="title" style={styles.monthText}>{monthLabel.toUpperCase()}</ThemedText>
 
-        <TouchableOpacity onPress={nextMonth} style={styles.arrowButton} accessibilityLabel="Next month">
-          <ThemedText style={styles.arrowText}>{'>'}</ThemedText>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity onPress={nextMonth} style={styles.arrowButton} accessibilityLabel="Next month">
+            <ThemedText style={styles.arrowText}>{'>'}</ThemedText>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.weekdaysRow}>
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, index) => (
-          <ThemedText key={d + 'day' + index} style={styles.weekday}>{d}</ThemedText>
-        ))}
-      </View>
+        <View style={styles.weekdaysRow}>
+          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, index) => (
+            <ThemedText key={d + 'day' + index} style={styles.weekday}>{d}</ThemedText>
+          ))}
+        </View>
 
-      <View style={styles.grid}>
-        {grid.map((day, idx) => (
-          <View key={String(idx)} style={styles.cell}>
-            {day ? (
-              <>
-                <ThemedText style={[
-                  styles.dayNumber,
-                  day === today.getDate() && viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear() ? styles.today : undefined,
-                ]}>{day}</ThemedText>
-                <View style={styles.dotsRow}>
-                  {(events[day] || []).slice(0, 3).map((c, i) => (
-                    <View key={i} style={[styles.dot, c === 'pink' ? styles.dotPink : styles.dotGreen]} />
-                  ))}
-                </View>
-              </>
-            ) : null}
-          </View>
-        ))}
-      </View>
-      <ScrollView style={styles.entriesScroll} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.grid}>
+          {grid.map((day, idx) => (
+            <View key={String(idx)} style={styles.cell}>
+              {day ? (
+                <>
+                  <ThemedText style={[
+                    styles.dayNumber,
+                    day === today.getDate() && viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear() ? styles.today : undefined,
+                  ]}>{day}</ThemedText>
+                  <View style={styles.dotsRow}>
+                    {(events[day] || []).slice(0, 3).map((c, i) => (
+                      <View key={i} style={[styles.dot, c === 'pink' ? styles.dotPink : styles.dotGreen]} />
+                    ))}
+                  </View>
+                </>
+              ) : null}
+            </View>
+          ))}
+        </View>
+
         <View style={styles.overviewCard}>
           <ThemedText style={styles.overviewTitle}>Your balance</ThemedText>
           {[
@@ -170,6 +171,7 @@ export default function AgendaScreen() {
             );
           })}
         </View>
+
         {entries.length === 0 ? (
           <ThemedText style={styles.emptyState}>No roses or thorns saved yet. Tap Add to create one.</ThemedText>
         ) : (
@@ -199,15 +201,27 @@ export default function AgendaScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40 },
-  header: { paddingTop: 16, paddingBottom: 8, alignItems: 'center' },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingTop: 8 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  pageContent: { paddingHorizontal: 20, paddingTop: 40, paddingBottom: 80 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingHorizontal: 12,
+  },
   arrowButton: { padding: 8 },
   arrowText: { fontSize: 20, color: '#FF2D86', fontWeight: '700' },
   monthText: { fontSize: 18, fontWeight: '700', color: '#FF2D86' },
-  weekdaysRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 12, paddingVertical: 8 },
-  weekday: { color: '#FF2D86', fontSize: 12, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, marginBottom: 8 },
+  weekdaysRow: { flexDirection: 'row', paddingVertical: 8 },
+  weekday: {
+    color: '#FF2D86',
+    fontSize: 16,
+    fontWeight: '700',
+    width: `${100 / 7}%`,
+    textAlign: 'center',
+  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
   cell: { width: `${100 / 7}%`, height: 56, alignItems: 'center', justifyContent: 'center' },
   dayNumber: { fontSize: 14, color: '#111' },
   today: { color: '#FF2D86', fontWeight: '700' },
@@ -215,8 +229,6 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 2 },
   dotPink: { backgroundColor: '#FF2D86' },
   dotGreen: { backgroundColor: '#2BB673' },
-  entriesScroll: { flex: 1 },
-  listContent: { padding: 20, paddingBottom: 80 },
   emptyState: { textAlign: 'center', color: '#9AA0A6', marginTop: 16, fontSize: 14 },
   entryCard: {
     flexDirection: 'row',
