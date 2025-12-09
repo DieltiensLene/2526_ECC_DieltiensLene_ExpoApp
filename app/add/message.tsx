@@ -47,7 +47,7 @@ export default function AddMessageScreen() {
       ].slice(0, 50);
 
       await setItem('entries', JSON.stringify(next));
-      router.push('/explore');
+      router.push('/(tabs)/explore');
     } catch (err) {
       console.error('Save entry failed', err);
       Alert.alert('Error', 'Unable to save your entry. Please try again.');

@@ -1,7 +1,30 @@
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
+import { useFocusEffect } from '@react-navigation/native';
+import { getItem } from '@/app/utils/storage';
+
+type Entry = {
+  id: string;
+  type: 'rose' | 'thorn';
+  message: string;
+  createdAt: string;
+};
+
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
+function formatEntryDate(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = date.getDate();
+  const month = monthNames[date.getMonth()] ?? '';
+  return `${day} ${month}`;
+}
+
+function getEventColor(type: Entry['type']): 'pink' | 'green' {
+  return type === 'rose' ? 'pink' : 'green';
+}
 
 function generateMonthGrid(year: number, month: number) {
   // month: 0-indexed (0 = Jan)
@@ -22,20 +45,49 @@ function generateMonthGrid(year: number, month: number) {
 export default function AgendaScreen() {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date());
+  const [entries, setEntries] = useState<Entry[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          const saved = await getItem('entries');
+          if (!active) return;
+          if (saved) {
+            const parsed: Entry[] = JSON.parse(saved);
+            parsed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setEntries(parsed);
+          } else {
+            setEntries([]);
+          }
+        } catch (error) {
+          console.warn('Failed to load entries', error);
+          if (active) setEntries([]);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   const grid = useMemo(() => generateMonthGrid(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
-
-  // sample events keyed to September 2025 (month index 8). Other months show no demo events.
-  const sampleEventsSept2025: Record<number, ('pink' | 'green')[]> = {
-    1: ['green', 'pink'],
-    2: ['pink'],
-    3: ['pink'],
-    13: ['green'],
-    19: ['green'],
-    24: ['pink'],
-  };
-
-  const events = (viewDate.getFullYear() === 2025 && viewDate.getMonth() === 8) ? sampleEventsSept2025 : {};
+  const events = useMemo(() => {
+    const map: Record<number, ('pink' | 'green')[]> = {};
+    entries.forEach((entry) => {
+      const date = new Date(entry.createdAt);
+      if (
+        date.getFullYear() === viewDate.getFullYear() &&
+        date.getMonth() === viewDate.getMonth()
+      ) {
+        const day = date.getDate();
+        if (!map[day]) map[day] = [];
+        map[day].push(getEventColor(entry.type));
+      }
+    });
+    return map;
+  }, [entries, viewDate]);
 
   const monthLabel = viewDate.toLocaleString(undefined, { month: 'long', year: 'numeric' });
 
@@ -86,6 +138,31 @@ export default function AgendaScreen() {
           </View>
         ))}
       </View>
+      <ScrollView style={styles.entriesScroll} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        {entries.length === 0 ? (
+          <ThemedText style={styles.emptyState}>No roses or thorns saved yet. Tap Add to create one.</ThemedText>
+        ) : (
+          entries.map((entry) => (
+            <View key={entry.id} style={styles.entryCard}>
+              <View
+                style={[
+                  styles.entryPill,
+                  entry.type === 'rose' ? styles.pillRose : styles.pillThorn,
+                ]}
+              />
+              <View style={styles.entryBody}>
+                <View style={styles.entryHeader}>
+                  <ThemedText style={styles.entryDate}>{formatEntryDate(entry.createdAt)}</ThemedText>
+                  <View style={[styles.entryBadge, entry.type === 'rose' ? styles.badgeRose : styles.badgeThorn]}>
+                    <ThemedText style={styles.badgeText}>{entry.type === 'rose' ? 'Rose' : 'Thorn'}</ThemedText>
+                  </View>
+                </View>
+                <ThemedText numberOfLines={2} style={styles.entryMessage}>{entry.message}</ThemedText>
+              </View>
+            </View>
+          ))
+        )}
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -99,7 +176,7 @@ const styles = StyleSheet.create({
   monthText: { fontSize: 18, fontWeight: '700', color: '#FF2D86' },
   weekdaysRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 12, paddingVertical: 8 },
   weekday: { color: '#FF2D86', fontSize: 12, fontWeight: '600' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, marginBottom: 8 },
   cell: { width: `${100 / 7}%`, height: 56, alignItems: 'center', justifyContent: 'center' },
   dayNumber: { fontSize: 14, color: '#111' },
   today: { color: '#FF2D86', fontWeight: '700' },
@@ -107,4 +184,36 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 2 },
   dotPink: { backgroundColor: '#FF2D86' },
   dotGreen: { backgroundColor: '#2BB673' },
+  entriesScroll: { flex: 1 },
+  listContent: { padding: 20, paddingBottom: 80 },
+  emptyState: { textAlign: 'center', color: '#9AA0A6', marginTop: 16, fontSize: 14 },
+  entryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  entryPill: { width: 6, alignSelf: 'stretch', borderRadius: 999 },
+  pillRose: { backgroundColor: '#FF5C93' },
+  pillThorn: { backgroundColor: '#2BB673' },
+  entryBody: { flex: 1, marginLeft: 12 },
+  entryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  entryDate: { fontSize: 18, fontWeight: '700', color: '#111' },
+  entryBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#F4F4F4',
+  },
+  badgeRose: { backgroundColor: 'rgba(255,92,147,0.15)' },
+  badgeThorn: { backgroundColor: 'rgba(43,182,115,0.15)' },
+  badgeText: { fontSize: 12, fontWeight: '600', color: '#555' },
+  entryMessage: { marginTop: 8, fontSize: 14, color: '#444' },
 });
