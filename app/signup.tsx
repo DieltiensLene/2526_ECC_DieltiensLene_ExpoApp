@@ -36,10 +36,7 @@ export default function SignupScreen() {
       const trimmedUsername = username.trim();
       const trimmedName = name.trim();
       const normalizedEmail = email.trim().toLowerCase();
-      const displayNameCandidate =
-        (trimmedName.split(/\s+/)[0] ?? '').trim() ||
-        (trimmedUsername.split(/[\s._-]+/)[0] ?? '').trim() ||
-        (normalizedEmail.split(/[@._-]+/)[0] ?? normalizedEmail);
+      const usernameFallback = trimmedUsername || normalizedEmail.split('@')[0] || normalizedEmail;
 
       const resp = await fetch(`${API_BASE}`, {
         method: 'POST',
@@ -67,8 +64,7 @@ export default function SignupScreen() {
       await setItem('loggedIn', 'true');
       if (userId) await setItem('userId', String(userId));
       // Save username and email locally to help future logins
-      await setItem('username', trimmedUsername || displayNameCandidate);
-      await setItem('displayName', displayNameCandidate);
+      await setItem('username', usernameFallback);
       await setItem('savedEmail', normalizedEmail);
       await setItem('savedPassword', password);
 
