@@ -8,6 +8,18 @@ import { setItem, getItem } from '@/app/utils/storage';
 // Backend base URL — match the deployed host used for signup.
 const API_BASE = process.env.API_BASE || 'https://two526-ecc-dieltienslene-backend-app-l7fz.onrender.com/users';
 
+function toFriendlyName(value: string | null | undefined) {
+  if (!value) return '';
+  const cleaned = value
+    .replace(/[0-9]/g, '')
+    .replace(/[_\.-]+/g, ' ')
+    .trim();
+  if (!cleaned) return '';
+  const token = cleaned.split(/\s+/)[0] ?? cleaned;
+  if (!token) return '';
+  return token.charAt(0).toUpperCase() + token.slice(1);
+}
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -74,11 +86,23 @@ export default function LoginScreen() {
       if (userId) await setItem('userId', String(userId));
       await setItem('savedEmail', normalizedEmail);
       await setItem('savedPassword', password);
-      // Save username if server provides it
-      const serverUsername = json?.username;
-      if (serverUsername) {
-        await setItem('username', String(serverUsername));
+
+      const serverName = toFriendlyName(json?.name);
+      const serverUsername = toFriendlyName(json?.username);
+      let friendlyName = serverName || serverUsername;
+
+      if (!friendlyName) {
+        const storedDisplayName = toFriendlyName(await getItem('displayName'));
+        if (storedDisplayName) friendlyName = storedDisplayName;
       }
+
+      if (!friendlyName) {
+        const emailLocalPart = normalizedEmail.split('@')[0] ?? normalizedEmail;
+        friendlyName = toFriendlyName(emailLocalPart) || normalizedEmail;
+      }
+
+      await setItem('username', friendlyName);
+      await setItem('displayName', friendlyName);
 
       router.replace('/(tabs)');
     } catch (err) {

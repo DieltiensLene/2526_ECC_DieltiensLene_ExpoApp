@@ -4,18 +4,43 @@ import { getItem } from '@/app/utils/storage';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 
+function formatName(raw?: string | null) {
+  if (!raw) return '';
+  const cleaned = raw
+    .replace(/[0-9]/g, '')
+    .replace(/[_\.-]+/g, ' ')
+    .trim();
+  if (!cleaned) return '';
+  const token = cleaned.split(/\s+/)[0] ?? cleaned;
+  const lower = token.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 export default function HomeScreen() {
   const [username, setUsername] = useState('');
 
   useEffect(() => {
     async function loadUsername() {
       try {
+        const storedDisplayName = await getItem('displayName');
+        if (storedDisplayName) {
+          setUsername(formatName(storedDisplayName));
+          return;
+        }
+
         const storedUsername = await getItem('username');
         if (storedUsername) {
-          setUsername(storedUsername);
+          setUsername(formatName(storedUsername));
+          return;
+        }
+
+        const savedEmail = await getItem('savedEmail');
+        if (savedEmail) {
+          const localPart = savedEmail.split('@')[0] ?? savedEmail;
+          setUsername(formatName(localPart));
         }
       } catch (error) {
-        console.log("Error loading username:", error);
+        console.log('Error loading username:', error);
       }
     }
 
