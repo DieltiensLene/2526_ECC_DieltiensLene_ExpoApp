@@ -89,6 +89,17 @@ export default function AgendaScreen() {
     return map;
   }, [entries, viewDate]);
 
+  const totals = useMemo(() => {
+    let rose = 0;
+    let thorn = 0;
+    entries.forEach((entry) => {
+      if (entry.type === 'rose') rose += 1;
+      else thorn += 1;
+    });
+    return { rose, thorn };
+  }, [entries]);
+  const maxTotal = Math.max(totals.rose, totals.thorn, 1);
+
   const monthLabel = viewDate.toLocaleString(undefined, { month: 'long', year: 'numeric' });
 
   function prevMonth() {
@@ -139,6 +150,26 @@ export default function AgendaScreen() {
         ))}
       </View>
       <ScrollView style={styles.entriesScroll} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.overviewCard}>
+          <ThemedText style={styles.overviewTitle}>Your balance</ThemedText>
+          {[
+            { key: 'rose' as const, emoji: '🌹', count: totals.rose, color: '#FF5C93' },
+            { key: 'thorn' as const, emoji: '🌿', count: totals.thorn, color: '#2BB673' },
+          ].map((item) => {
+            const rawPercent = item.count === 0 ? 18 : (item.count / maxTotal) * 100;
+            const widthPercent = Math.min(Math.max(rawPercent, 18), 100);
+            return (
+              <View key={item.key} style={styles.barRow}>
+                <View style={styles.barTrack}>
+                  <View style={[styles.barFill, { width: `${widthPercent}%`, backgroundColor: item.color }]}>
+                    <ThemedText style={styles.barCount}>{item.count}</ThemedText>
+                  </View>
+                </View>
+                <ThemedText style={styles.barEmoji}>{item.emoji}</ThemedText>
+              </View>
+            );
+          })}
+        </View>
         {entries.length === 0 ? (
           <ThemedText style={styles.emptyState}>No roses or thorns saved yet. Tap Add to create one.</ThemedText>
         ) : (
@@ -216,4 +247,29 @@ const styles = StyleSheet.create({
   badgeThorn: { backgroundColor: 'rgba(43,182,115,0.15)' },
   badgeText: { fontSize: 12, fontWeight: '600', color: '#555' },
   entryMessage: { marginTop: 8, fontSize: 14, color: '#444' },
+  overviewCard: {
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    marginBottom: 20,
+    borderColor: '#F0F0F0',
+    borderWidth: 1,
+  },
+  overviewTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12, color: '#111' },
+  barRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  barTrack: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#F5F5F5',
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 14,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  barCount: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  barEmoji: { fontSize: 24, marginLeft: 12 },
 });
