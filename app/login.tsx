@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Keyboard } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useRouter } from 'expo-router';
-import { setItem } from '@/app/utils/storage';
+import { setItem, getItem } from '@/app/utils/storage';
 
 // Backend base URL — match the deployed host used for signup.
 const API_BASE = process.env.API_BASE || 'https://two526-ecc-dieltienslene-backend-app-l7fz.onrender.com/users';
@@ -14,8 +14,25 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const savedEmail = await getItem('savedEmail');
+        const savedPassword = await getItem('savedPassword');
+        if (mounted) {
+          if (savedEmail) setEmail(savedEmail);
+          if (savedPassword) setPassword(savedPassword);
+        }
+      } catch (err) {
+        console.warn('Prefill credentials failed', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   function validate() {
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       Alert.alert('Validation', 'Please enter email and password');
       return false;
     }
@@ -27,10 +44,11 @@ export default function LoginScreen() {
     Keyboard.dismiss();
     setLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const resp = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
       let json = null;
@@ -54,6 +72,13 @@ export default function LoginScreen() {
 
       await setItem('loggedIn', 'true');
       if (userId) await setItem('userId', String(userId));
+      await setItem('savedEmail', normalizedEmail);
+      await setItem('savedPassword', password);
+      // Save username if server provides it
+      const serverUsername = json?.username;
+      if (serverUsername) {
+        await setItem('username', String(serverUsername));
+      }
 
       router.replace('/(tabs)');
     } catch (err) {

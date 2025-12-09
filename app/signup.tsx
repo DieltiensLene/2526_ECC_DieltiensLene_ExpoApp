@@ -33,10 +33,14 @@ export default function SignupScreen() {
     Keyboard.dismiss();
     setLoading(true);
     try {
+      const trimmedUsername = username.trim();
+      const trimmedName = name.trim();
+      const normalizedEmail = email.trim().toLowerCase();
+
       const resp = await fetch(`${API_BASE}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), name: name.trim(), email: email.trim(), password }),
+        body: JSON.stringify({ username: trimmedUsername, name: trimmedName, email: normalizedEmail, password }),
       });
       let json = null;
       let text = null;
@@ -57,9 +61,11 @@ export default function SignupScreen() {
 
       const userId = json?.id ?? text;
       await setItem('loggedIn', 'true');
-      // store username for greeting on home screen
-      if (username?.trim()) await setItem('username', username.trim());
       if (userId) await setItem('userId', String(userId));
+      // Save username and email locally to help future logins
+      await setItem('username', trimmedUsername);
+      await setItem('savedEmail', normalizedEmail);
+      await setItem('savedPassword', password);
 
       router.replace('/(tabs)');
     } catch (err) {
