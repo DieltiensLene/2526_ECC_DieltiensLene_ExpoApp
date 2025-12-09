@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -7,6 +7,15 @@ import { ThemedView } from '@/components/themed-view';
 export default function AddScreen() {
   const [selected, setSelected] = useState<'rose' | 'thorn' | null>(null);
   const router = useRouter();
+
+  function handleContinue() {
+    if (!selected) {
+      Alert.alert('Pick one first', 'Select a rose or thorn before continuing.');
+      return;
+    }
+
+    router.push({ pathname: '/add/message', params: { type: selected } });
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -48,7 +57,11 @@ export default function AddScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.continue} onPress={() => router.push('add/message' as any)}>
+      <TouchableOpacity
+        style={[styles.continue, !selected && styles.continueDisabled]}
+        onPress={handleContinue}
+        disabled={!selected}
+      >
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
     </ThemedView>
@@ -97,5 +110,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
   },
+  continueDisabled: { opacity: 0.5 },
   continueText: { color: '#fff', fontSize: 16 },
 });

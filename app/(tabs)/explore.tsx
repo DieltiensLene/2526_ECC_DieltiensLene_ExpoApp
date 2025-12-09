@@ -62,8 +62,8 @@ export default function AgendaScreen() {
       </View>
 
       <View style={styles.weekdaysRow}>
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => (
-          <ThemedText key={d} style={styles.weekday}>{d}</ThemedText>
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, index) => (
+          <ThemedText key={d + 'day' + index} style={styles.weekday}>{d}</ThemedText>
         ))}
       </View>
 
