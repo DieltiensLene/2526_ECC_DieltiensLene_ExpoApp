@@ -143,7 +143,7 @@ export default function AddMessageScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: 24, paddingTop: 24 },
+  content: { flex: 1, padding: 24, paddingTop: 56 },
   titleLine: { lineHeight: 36 },
   titleText: {
     fontSize: 34,
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E6E6E6',
     paddingHorizontal: 12,
-    paddingTop: 12,
+    paddingTop: 18,
     fontSize: 16,
     color: '#000',
     backgroundColor: '#fff',
