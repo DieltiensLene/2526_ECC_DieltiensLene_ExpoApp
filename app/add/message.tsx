@@ -18,7 +18,7 @@ import { setItem, getItem } from '@/app/utils/storage';
 type Entry = {
   id: string;
   type: string;
-  message: string;
+  text: string;
   createdAt: string;
 };
 
@@ -70,7 +70,7 @@ export default function AddMessageScreen() {
     const entry: Entry = {
       id: Date.now().toString(),
       type: mood ?? 'rose',
-      message: trimmed,
+      text: trimmed,
       createdAt: new Date().toISOString(),
     };
 

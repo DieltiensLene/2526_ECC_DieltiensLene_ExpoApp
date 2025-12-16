@@ -1,16 +1,53 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useFocusEffect } from '@react-navigation/native';
-import { getItem } from '@/app/utils/storage';
+import { getItem, setItem } from '@/app/utils/storage';
 
 type Entry = {
   id: string;
   type: 'rose' | 'thorn';
-  text: string;
+  message: string;
   createdAt: string;
 };
+
+const REMOTE_MESSAGES_URL = 'https://two526-ecc-dieltienslene-backend-app-l7fz.onrender.com/messages';
+
+function normalizeEntries(data: unknown): Entry[] {
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const record = item as Record<string, unknown>;
+      const message =
+        typeof record.message === 'string'
+          ? record.message
+          : typeof record.text === 'string'
+          ? record.text
+          : null;
+      if (!message) return null;
+      const rawType =
+        typeof record.type === 'string'
+          ? record.type
+          : typeof record.mood === 'string'
+          ? record.mood
+          : typeof record.label === 'string'
+          ? record.label
+          : null;
+      const normalizedType = rawType?.toLowerCase() ?? 'rose';
+      const type: Entry['type'] = normalizedType.includes('thorn') ? 'thorn' : 'rose';
+      const createdAt = typeof record.createdAt === 'string' ? record.createdAt : new Date().toISOString();
+      const id =
+        typeof record.id === 'string'
+          ? record.id
+          : typeof record.id === 'number'
+          ? record.id.toString()
+          : `${type}-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
+      return { id, type, message, createdAt } satisfies Entry;
+    })
+    .filter((entry): entry is Entry => Boolean(entry));
+}
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
@@ -46,24 +83,41 @@ export default function AgendaScreen() {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date());
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
+        setLoading(true);
         try {
-          const saved = await getItem('entries');
-          if (!active) return;
-          if (saved) {
-            const parsed: Entry[] = JSON.parse(saved);
-            parsed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-            setEntries(parsed);
-          } else {
-            setEntries([]);
+          const response = await fetch(REMOTE_MESSAGES_URL);
+          if (!response.ok) {
+            throw new Error(`Remote fetch failed with status ${response.status}`);
           }
+          const remote = normalizeEntries(await response.json());
+          remote.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          if (!active) return;
+          setEntries(remote);
+          await setItem('entries', JSON.stringify(remote));
         } catch (error) {
-          console.warn('Failed to load entries', error);
-          if (active) setEntries([]);
+          console.warn('Failed to fetch entries', error);
+          try {
+            const saved = await getItem('entries');
+            if (!active) return;
+            if (saved) {
+              const cached = normalizeEntries(JSON.parse(saved));
+              cached.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              setEntries(cached);
+            } else {
+              setEntries([]);
+            }
+          } catch (storageError) {
+            console.warn('Failed to read cached entries', storageError);
+            if (active) setEntries([]);
+          }
+        } finally {
+          if (active) setLoading(false);
         }
       })();
       return () => {
@@ -113,6 +167,13 @@ export default function AgendaScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.pageContent} showsVerticalScrollIndicator={false}>
+        {loading && (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator color="#FF2D86" />
+            <ThemedText style={styles.loadingText}>Loading your roses and thorns…</ThemedText>
+          </View>
+        )}
+
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={prevMonth} style={styles.arrowButton} accessibilityLabel="Previous month">
             <ThemedText style={styles.arrowText}>{'<'}</ThemedText>
@@ -190,7 +251,7 @@ export default function AgendaScreen() {
                     <ThemedText style={styles.badgeText}>{entry.type === 'rose' ? 'Rose' : 'Thorn'}</ThemedText>
                   </View>
                 </View>
-                <ThemedText numberOfLines={2} style={styles.entryMessage}>{entry.text}</ThemedText>
+                <ThemedText numberOfLines={2} style={styles.entryMessage}>{entry.message}</ThemedText>
               </View>
             </View>
           ))
@@ -284,4 +345,11 @@ const styles = StyleSheet.create({
   },
   barCount: { color: '#fff', fontSize: 18, fontWeight: '700' },
   barEmoji: { fontSize: 24, marginLeft: 12 },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 12,
+  },
+  loadingText: { color: '#9AA0A6', fontSize: 14, marginLeft: 12 },
 });
