@@ -8,7 +8,7 @@ import { getItem } from '@/app/utils/storage';
 type Entry = {
   id: string;
   type: 'rose' | 'thorn';
-  message: string;
+  text: string;
   createdAt: string;
 };
 
@@ -190,7 +190,7 @@ export default function AgendaScreen() {
                     <ThemedText style={styles.badgeText}>{entry.type === 'rose' ? 'Rose' : 'Thorn'}</ThemedText>
                   </View>
                 </View>
-                <ThemedText numberOfLines={2} style={styles.entryMessage}>{entry.message}</ThemedText>
+                <ThemedText numberOfLines={2} style={styles.entryMessage}>{entry.text}</ThemedText>
               </View>
             </View>
           ))
