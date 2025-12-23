@@ -8,6 +8,14 @@ export default function AddScreen() {
   const [selected, setSelected] = useState<'rose' | 'thorn' | null>(null);
   const router = useRouter();
 
+  function handleBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/(tabs)/index');
+    }
+  }
+
   function handleContinue() {
     console.log('Selected mood:', selected);
     if (!selected) {
@@ -20,6 +28,15 @@ export default function AddScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <TouchableOpacity
+        accessibilityLabel="Go back"
+        style={styles.backButton}
+        onPress={handleBack}
+      >
+        <Text style={styles.backArrow}>←</Text>
+        <Text style={styles.backLabel}>Back</Text>
+      </TouchableOpacity>
+
       <View style={styles.content}>
         <ThemedText type="title" style={styles.titleLine}>
           <ThemedText type="title" style={styles.titleText}>
@@ -30,7 +47,7 @@ export default function AddScreen() {
         </ThemedText>
 
         <ThemedText type="title" style={styles.subtitle}>
-          of a <Text style={styles.green}>thorn</Text>...
+          or a <Text style={styles.green}>thorn</Text>...
         </ThemedText>
       </View>
 
@@ -71,8 +88,22 @@ export default function AddScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  backButton: {
+    position: 'absolute',
+    top: 68,
+    left: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    zIndex: 10,
+  },
+  backArrow: { fontSize: 18, color: '#111', marginRight: 6 },
+  backLabel: { fontSize: 16, fontWeight: '600', color: '#111' },
   // place the header at the absolute top (where the buttons used to be)
-  content: { position: 'absolute', top: 68, left: 24, right: 24 },
+  content: { position: 'absolute', top: 68, left: 24, right: 24, paddingTop: 64 },
   titleLine: { lineHeight: 36 },
   titleText: { fontSize: 30, lineHeight: 36, color: '#000' },
   pink: { color: '#FF2D86' },
