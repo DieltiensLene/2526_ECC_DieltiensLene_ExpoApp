@@ -127,31 +127,36 @@ export default function AgendaScreen() {
   );
 
   const grid = useMemo(() => generateMonthGrid(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
-  const events = useMemo(() => {
-    const map: Record<number, ('pink' | 'green')[]> = {};
-    entries.forEach((entry) => {
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) => {
       const date = new Date(entry.createdAt);
-      if (
+      return (
         date.getFullYear() === viewDate.getFullYear() &&
         date.getMonth() === viewDate.getMonth()
-      ) {
-        const day = date.getDate();
-        if (!map[day]) map[day] = [];
-        map[day].push(getEventColor(entry.type));
-      }
+      );
+    });
+  }, [entries, viewDate]);
+
+  const events = useMemo(() => {
+    const map: Record<number, ('pink' | 'green')[]> = {};
+    filteredEntries.forEach((entry) => {
+      const date = new Date(entry.createdAt);
+      const day = date.getDate();
+      if (!map[day]) map[day] = [];
+      map[day].push(getEventColor(entry.type));
     });
     return map;
-  }, [entries, viewDate]);
+  }, [filteredEntries]);
 
   const totals = useMemo(() => {
     let rose = 0;
     let thorn = 0;
-    entries.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
       if (entry.type === 'rose') rose += 1;
       else thorn += 1;
     });
     return { rose, thorn };
-  }, [entries]);
+  }, [filteredEntries]);
   const maxTotal = Math.max(totals.rose, totals.thorn, 1);
 
   const monthLabel = viewDate.toLocaleString(undefined, { month: 'long', year: 'numeric' });
@@ -233,10 +238,10 @@ export default function AgendaScreen() {
           })}
         </View>
 
-        {entries.length === 0 ? (
-          <ThemedText style={styles.emptyState}>No roses or thorns saved yet. Tap Add to create one.</ThemedText>
+        {filteredEntries.length === 0 ? (
+          <ThemedText style={styles.emptyState}>No roses or thorns saved for this month yet. Tap Add to create one.</ThemedText>
         ) : (
-          entries.map((entry) => (
+          filteredEntries.map((entry) => (
             <View key={entry.id} style={styles.entryCard}>
               <View
                 style={[
