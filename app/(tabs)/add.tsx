@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   backArrow: { fontSize: 18, color: '#111', marginRight: 6 },
   backLabel: { fontSize: 16, fontWeight: '600', color: '#111' },
   // place the header at the absolute top (where the buttons used to be)
-  content: { position: 'absolute', top: 68, left: 24, right: 24, paddingTop: 64 },
+  content: { position: 'absolute', top: 68, left: 24, right: 24, paddingTop: 88 },
   titleLine: { lineHeight: 36 },
   titleText: { fontSize: 30, lineHeight: 36, color: '#000' },
   pink: { color: '#FF2D86' },
